@@ -1,0 +1,79 @@
+================ ahb_slave ================
+== T1 單筆寫入 CSR(0x00) 再讀回 ==
+  [PASS] T1 read CSR : 00000001
+== T2 INCR4 burst 寫入 0x20~0x2C 再 burst 讀回 ==
+  [PASS] T2 burst read : a5a50000
+  [PASS] T2 burst read : a5a50001
+  [PASS] T2 burst read : a5a50002
+  [PASS] T2 burst read : a5a50003
+  [PASS] T2 reg file : a5a50000
+  [PASS] T2 reg file : a5a50001
+  [PASS] T2 reg file : a5a50002
+  [PASS] T2 reg file : a5a50003
+== T3 讀取不存在的暫存器 0x200 -> 應回 ERROR ==
+  [PASS] T3 HRESP=ERROR : 00000001
+== T4 錯誤之後再寫入/讀回 0x04 ==
+  [PASS] T4 read after error : 12345678
+
+*** tb_ahb_slave_wrapper : ALL TESTS PASSED ***
+tb/tb_ahb_slave_wrapper.v:140: $finish called at 655000 (1ps)
+
+================ ahb_master ================
+== T1 CPU 佔用匯流排時，DMA 寫入 0x00 ==
+  [PASS] T1 mem[0x00] : 11112222
+  [PASS] T1 wrapper 在 BUS_REQ 等了 6 拍
+== T2 DMA 搬移 0x40~0x4C -> 0x80~0x8C ==
+  [PASS] T2 dst word : c0de0000
+  [PASS] T2 dst word : c0de0001
+  [PASS] T2 dst word : c0de0002
+  [PASS] T2 dst word : c0de0003
+== T3 寫入錯誤區 0x8000_0000 -> 應收到 wb_err ==
+  [PASS] T3 wb_err : 00000001
+== T4 讀取 RETRY 區 0x4000_0010 -> wrapper 應重送 ==
+  [PASS] T4 read after RETRY : 5eedbeef
+  [PASS] T4 no error : 00000000
+  [PASS] T4 retry count : 00000001
+
+*** tb_ahb_master_wrapper : ALL TESTS PASSED ***
+tb/tb_ahb_master_wrapper.v:153: $finish called at 905000 (1ps)
+
+================ axi_slave ================
+== T1 單拍寫入 0x08 再讀回 ==
+  [PASS] T1 read : cafe0008
+  [PASS] T1 BRESP=OKAY : 00000000
+== T2 4 拍 burst 寫入 0x40~0x4C，再 burst 讀回 ==
+  [PASS] T2 burst read : b0b00000
+  [PASS] T2 burst read : b0b00001
+  [PASS] T2 burst read : b0b00002
+  [PASS] T2 burst read : b0b00003
+  [PASS] T2 RLAST only last : 00000001
+  [PASS] T2 reg file : b0b00000
+  [PASS] T2 reg file : b0b00001
+  [PASS] T2 reg file : b0b00002
+  [PASS] T2 reg file : b0b00003
+== T3 存取不存在的暫存器 0x300 -> SLVERR ==
+  [PASS] T3 BRESP=SLVERR : 00000002
+  [PASS] T3 RRESP=SLVERR : 00000002
+== T4 同一拍送 AW 與 AR（位址 0x10）-> 寫入優先 ==
+  [PASS] T4 read sees new data : f1f10010
+  [PASS] T4 讀取在寫入完成後才被接受
+
+*** tb_axi_slave_wrapper : ALL TESTS PASSED ***
+tb/tb_axi_slave_wrapper.v:171: $finish called at 755000 (1ps)
+
+================ axi_master ================
+== T1 寫入 0x00 再讀回（slave 先收 W 才給 AWREADY） ==
+  [PASS] T1 read back : 77778888
+  [PASS] T1 W 先完成、AW 等了 2 拍，沒有死結
+== T2 DMA 搬移 0x40~0x4C -> 0x80~0x8C ==
+  [PASS] T2 dst word : d0d00000
+  [PASS] T2 dst word : d0d00001
+  [PASS] T2 dst word : d0d00002
+  [PASS] T2 dst word : d0d00003
+== T3 存取錯誤區 0x8000_0000 -> 應收到 wb_err ==
+  [PASS] T3 write wb_err : 00000001
+  [PASS] T3 read wb_err : 00000001
+
+*** tb_axi_master_wrapper : ALL TESTS PASSED ***
+tb/tb_axi_master_wrapper.v:121: $finish called at 945000 (1ps)
+
